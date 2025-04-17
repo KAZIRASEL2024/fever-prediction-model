@@ -1,35 +1,33 @@
-
 import streamlit as st
 import joblib
 import numpy as np
 
-# Load the trained model
+# Load the model
 model = joblib.load("fever_model.pkl")
 
-# Streamlit page configuration
-st.title("Fever Prediction App")
-st.write("This is a machine learning app to predict whether you have fever or not.")
+st.title("🤒 Fever Prediction App")
+st.markdown("Enter patient details to check if fever is likely.")
 
-# Input fields for prediction
-age = st.number_input("Enter Age", min_value=0, max_value=120, value=30)
-temperature = st.number_input("Enter Temperature", min_value=0.0, max_value=100.0, value=98.6)
-body_ache = st.selectbox("Do you have body ache?", ["Yes", "No"])
-cough = st.selectbox("Do you have a cough?", ["Yes", "No"])
-fatigue = st.selectbox("Do you feel fatigued?", ["Yes", "No"])
+# Input fields
+age = st.number_input("Age", min_value=0, max_value=120, value=25)
+blood_pressure = st.number_input("Blood Pressure", min_value=60, max_value=200, value=120)
+heart_rate = st.number_input("Heart Rate", min_value=40, max_value=200, value=80)
+temperature = st.number_input("Body Temperature (°F)", min_value=95.0, max_value=110.0, value=98.6)
+cough = st.selectbox("Cough", ["No", "Yes"])
+headache = st.selectbox("Headache", ["No", "Yes"])
+body_pain = st.selectbox("Body Pain", ["No", "Yes"])
 
-# Convert categorical inputs to numerical values
-body_ache = 1 if body_ache == "Yes" else 0
-cough = 1 if cough == "Yes" else 0
-fatigue = 1 if fatigue == "Yes" else 0
+# Convert categorical to numerical
+cough_val = 1 if cough == "Yes" else 0
+headache_val = 1 if headache == "Yes" else 0
+body_pain_val = 1 if body_pain == "Yes" else 0
 
-# Prepare the feature vector for prediction
-features = np.array([age, temperature, body_ache, cough, fatigue]).reshape(1, -1)
+# Predict button
+if st.button("Predict"):
+    input_data = np.array([[age, blood_pressure, heart_rate, temperature, cough_val, headache_val, body_pain_val]])
+    prediction = model.predict(input_data)
 
-# Prediction
-if st.button("Predict Fever Condition"):
-    prediction = model.predict(features)
-    if prediction[0] == 1:
-        st.write("The model predicts: **You have fever.**")
+    if prediction[0] == "Yes":
+        st.success("🦠 High chance of fever!")
     else:
-        st.write("The model predicts: **You do not have fever.**")
-    
+        st.info("✅ Fever not likely.")
